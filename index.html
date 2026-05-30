@@ -306,8 +306,10 @@ function buildFeatured() {
   if (!featured.length){section.style.display='none';return;}
   section.style.display='block';
   const track=document.getElementById('featured-track');
-  // Duplicate for infinite loop
-  const items=[...featured,...featured,...featured];
+  // Duplicate enough times to always exceed viewport
+  const minCards = Math.ceil(2000 / (140+12)) + featured.length;
+  const repeatCount = Math.ceil(minCards / featured.length);
+  const items = Array.from({length: repeatCount}, ()=>featured).flat();
   track.innerHTML='';
   items.forEach(p=>{
     const imgs=getImages(p);
@@ -328,22 +330,24 @@ function buildFeatured() {
 function startFeaturedScroll(track, count) {
   if (featuredTimer) clearInterval(featuredTimer);
   const cardW = 140 + 12;
+  // loopW = one full set of original cards
+  // We rendered many duplicates; loop point is after first full set
   const loopW = cardW * count;
   featuredOffset = 0;
   track.style.transition = 'none';
-  track.style.transform = 'translateX(0)';
-  featuredTimer = setInterval(()=>{
-    featuredOffset += 0.4;
-    if (featuredOffset >= loopW) {
-      // Seamless reset: disable transition, snap back, re-enable
-      featuredOffset = featuredOffset - loopW;
-      track.style.transition = 'none';
+  track.style.transform = 'translateX(0px)';
+
+  // Wait for paint before starting
+  requestAnimationFrame(() => {
+    featuredTimer = setInterval(()=>{
+      featuredOffset += 0.4;
+      // When we've scrolled one full set, snap back to start seamlessly
+      if (featuredOffset >= loopW) {
+        featuredOffset -= loopW;
+      }
       track.style.transform = `translateX(-${featuredOffset}px)`;
-    } else {
-      track.style.transition = 'none';
-      track.style.transform = `translateX(-${featuredOffset}px)`;
-    }
-  }, 16);
+    }, 16);
+  });
 }
 
 // ── CAROUSEL MODAL ───────────────────────────────────────────────────────────
