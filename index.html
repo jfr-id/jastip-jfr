@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(15,15,15,0.96);backdrop-filter:blur(12px);z-index:100;}
 .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
 .brand{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.02em;color:var(--accent);}
-.brand-sub{font-size:11px;color:var(--text2);margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
+.brand-sub{font-size:11px;color:var(--text);opacity:0.6;margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
 .brand-sub.visible{display:block;}
 .filter-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-top:12px;}
 .filter-bar::-webkit-scrollbar{display:none;}
@@ -33,9 +33,9 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 
 /* FEATURED */
 .featured-wrap{overflow:hidden;border-bottom:1px solid var(--border);position:relative;}
-.featured-track-outer{overflow:hidden;}
-.featured-track-outer::after{content:'';position:absolute;top:0;right:0;width:40px;height:100%;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none;z-index:2;}
-.featured-track{display:flex;gap:12px;padding:16px 20px 16px 20px;will-change:transform;}
+.featured-track-outer{overflow:hidden;width:100%;}
+.featured-track-outer::after{content:'';position:absolute;top:0;right:0;width:32px;height:100%;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none;z-index:2;}
+.featured-track{display:flex;gap:12px;padding:16px 0 16px 20px;will-change:transform;}
 .featured-card{flex-shrink:0;width:140px;cursor:pointer;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--surface);transition:border-color 0.2s;}
 .featured-card:hover{border-color:var(--accent);}
 .featured-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--surface2);}
@@ -69,14 +69,14 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent;position:relative;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
-.modal-close{position:fixed;top:16px;right:16px;width:36px;height:36px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:300;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.modal-close{position:sticky;top:8px;float:right;margin:8px 8px 0 0;width:36px;height:36px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 .modal-close:hover{background:#c04040;}
 
 /* CAROUSEL */
 .carousel{position:relative;background:var(--surface2);}
 .carousel-track{display:flex;overflow:hidden;}
 .carousel-slide{flex-shrink:0;width:100%;}
-.carousel-slide img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
+.carousel-slide img{width:100%;max-height:220px;object-fit:contain;display:block;background:var(--surface2);}
 .carousel-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 6px;}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:all 0.2s;border:none;}
 .dot.active{background:var(--accent);width:18px;border-radius:3px;}
@@ -325,12 +325,13 @@ function buildFeatured() {
 
 function startFeaturedScroll(track, count) {
   if (featuredTimer) clearInterval(featuredTimer);
-  const cardW = 140+12; // width + gap
+  const cardW = 140+12;
   const loopW = cardW * count;
   featuredOffset = 0;
+  track.style.transform = 'translateX(0)';
   featuredTimer = setInterval(()=>{
-    featuredOffset += 0.5;
-    if (featuredOffset >= loopW) featuredOffset -= loopW;
+    featuredOffset += 0.4;
+    if (featuredOffset >= loopW) featuredOffset = 0;
     track.style.transform=`translateX(-${featuredOffset}px)`;
   }, 16);
 }
@@ -340,7 +341,7 @@ function buildCarousel(imgs) {
   const container=document.getElementById('modal-carousel');
   if (!imgs.length){container.innerHTML='';return;}
   if (imgs.length===1){
-    container.innerHTML=`<div class="carousel" style="position:relative"><img src="${imgs[0]}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'"><button class="zoom-trigger" onclick="openZoom('${imgs[0]}')">⤢</button></div>`;
+    container.innerHTML=`<div class="carousel" style="position:relative"><img src="${imgs[0]}" style="width:100%;max-height:220px;object-fit:contain;display:block;background:var(--surface2);" onerror="this.parentElement.style.display='none'"><button class="zoom-trigger" onclick="openZoom('${imgs[0]}')">⤢</button></div>`;
     return;
   }
   let current=0;
