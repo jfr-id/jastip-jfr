@@ -20,16 +20,16 @@ body.dark {
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
 
 /* HEADER */
-header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(15,15,15,0.96)!important;backdrop-filter:blur(12px);z-index:100;}
+header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(15,15,15,0.96);backdrop-filter:blur(12px);z-index:100;}
 .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
-.brand{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.02em;color:#c8a96e;}
+.brand{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.02em;color:var(--accent);}
 .brand-sub{font-size:11px;color:rgba(255,255,255,0.75);margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
 .brand-sub.visible{display:block;}
 .filter-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-top:12px;}
 .filter-bar::-webkit-scrollbar{display:none;}
-.chip{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.chip{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .chip:hover{border-color:var(--accent);color:var(--accent);}
-.chip.active{background:#c8a96e;border-color:#c8a96e;color:#0f0f0f;font-weight:500;}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#0f0f0f;font-weight:500;}
 
 /* FEATURED */
 .featured-wrap{overflow:hidden;border-bottom:1px solid var(--border);}
@@ -59,23 +59,24 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .card-img{width:100%;height:100%;object-fit:cover;display:block;}
 .card-body{padding:12px;}
 .card-merk{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;}
-.card-name{font-size:13px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-name{font-size:13px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .card-price{font-family:'Playfair Display',serif;font-size:15px;color:var(--accent);}
+.card-kategori{font-size:11px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:0.08em;}
 
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
-.modal{background:var(--surface);opacity:1;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:calc(92vh - env(safe-area-inset-bottom));overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent;position:relative;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent;position:relative;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
 .modal-close{position:absolute;top:10px;right:10px;width:36px;height:36px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
 .modal-close:hover{background:#c04040;}
 
 /* CAROUSEL */
-.carousel{position:relative;background:var(--surface2);opacity:1;}
+.carousel{position:relative;background:var(--surface2);}
 .carousel-track{display:flex;overflow:hidden;}
 .carousel-slide{flex-shrink:0;width:100%;}
-.carousel-slide img{width:100%;max-height:200px;object-fit:scale-down;display:block;background:var(--surface2);}
+.carousel-slide img{width:100%;max-height:200px;object-fit:scale-down;display:block;}
 .carousel-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 6px;}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:all 0.2s;border:none;}
 .dot.active{background:var(--accent);width:18px;border-radius:3px;}
@@ -136,19 +137,6 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .zoom-trigger:hover{background:rgba(0,0,0,0.8);}
 
 #featured-section{display:block;width:100%;overflow:hidden;}
-
-.search-wrap{display:flex;align-items:center;overflow:hidden;border:1px solid rgba(255,255,255,0.2);border-radius:999px;transition:width 0.25s ease;width:30px;background:rgba(255,255,255,0.08);}
-.search-wrap.open{width:160px;}
-.search-icon-btn{width:28px;height:28px;flex-shrink:0;background:transparent;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;}
-.search-input{border:none;background:transparent;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;width:0;padding:0;outline:none;}
-.search-wrap.open .search-input{width:125px;padding:0 8px 0 2px;}
-.search-input::placeholder{color:rgba(255,255,255,0.4);}
-
-.copy-toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:999px;font-size:12px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
-.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.badge-true{cursor:pointer;}
-.badge-true:hover{background:var(--green)!important;color:#fff!important;}
-.badge-false{cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -157,8 +145,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
   <div class="header-top">
     <div class="brand">Jastip <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:300;margin-left:6px;letter-spacing:0.12em;text-transform:uppercase;">by jfr</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <div class="search-wrap" id="search-wrap"><button class="search-icon-btn" id="search-icon-btn">🔍</button><input class="search-input" id="search-input" type="text" placeholder="Nama / merk..."></div>
-      <button id="theme-toggle" title="Toggle tema" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">🌙</button>
+      <button id="theme-toggle" title="Toggle tema" style="background:transparent;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">🌙</button>
       <a class="modal-order" id="wa-header" href="#" target="_blank" style="display:none;width:auto;padding:7px 16px;font-size:13px;margin-top:0;">Order via WA</a>
     </div>
   </div>
@@ -208,7 +195,7 @@ const GIDS = { products_public:'120988448', variants:'212657426', settings:'7958
 let products=[], variants=[], settings={};
 let activeCategory='Semua', activeSort='name';
 let savedScrollY=0, savedCategory='Semua';
-let featuredTimer=null, featuredOffset=0, featuredPaused=false, featuredResumeTimer=null;
+let featuredTimer=null, featuredOffset=0;
 
 // ── FETCH CSV ────────────────────────────────────────────────────────────────
 async function fetchSheet(name) {
@@ -262,7 +249,6 @@ function isFeatured(p) { return String(p.featured).toUpperCase()==='TRUE'; }
 function getFiltered() {
   let list = products.filter(isActive);
   if (activeCategory !== 'Semua') list = list.filter(p => p.kategori===activeCategory);
-  if (typeof searchQuery!=='undefined'&&searchQuery){ const q=searchQuery.toLowerCase(); list=list.filter(p=>(p.nama||'').toLowerCase().includes(q)||(p.merk||'').toLowerCase().includes(q)); }
   if (activeSort==='name') list = [...list].sort((a,b)=>a.nama.localeCompare(b.nama,'id'));
   else if (activeSort==='cat') list = [...list].sort((a,b)=>a.kategori.localeCompare(b.kategori,'id')||a.nama.localeCompare(b.nama,'id'));
   else list = [...list].sort((a,b)=>(Number(a.urutan)||99)-(Number(b.urutan)||99));
@@ -292,6 +278,7 @@ function renderGrid() {
         ${p.merk?`<div class="card-merk">${p.merk}</div>`:''}
         <div class="card-name">${p.nama}</div>
         <div class="card-price">${formatIDR(p.harga_jual_idr)}</div>
+        <div class="card-kategori">${p.kategori||''}</div>
       </div>`;
     card.onclick=()=>openModal(p);
     grid.appendChild(card);
@@ -343,28 +330,21 @@ function buildFeatured() {
 function startFeaturedScroll(track, count) {
   if (featuredTimer) clearInterval(featuredTimer);
   const cardW = 140 + 12;
+  // loopW = one full set of original cards
+  // We rendered many duplicates; loop point is after first full set
   const loopW = cardW * count;
   featuredOffset = 0;
+  track.style.transition = 'none';
   track.style.transform = 'translateX(0px)';
-  const wrap = document.getElementById('featured-wrap') || track.parentElement.parentElement;
-  wrap.style.cursor = 'grab';
 
-  let dragStart=null, dragBase=0;
-  function onDown(x){ dragStart=x; dragBase=featuredOffset; featuredPaused=true; if(featuredResumeTimer) clearTimeout(featuredResumeTimer); }
-  function onMove(x){ if(dragStart===null) return; let o=(dragBase+(dragStart-x))%loopW; if(o<0)o+=loopW; featuredOffset=o; track.style.transform=`translateX(-${featuredOffset}px)`; }
-  function onUp(){ dragStart=null; featuredResumeTimer=setTimeout(()=>{featuredPaused=false;},3000); }
-  wrap.addEventListener('mousedown',e=>onDown(e.clientX));
-  window.addEventListener('mousemove',e=>{if(dragStart!==null)onMove(e.clientX);});
-  window.addEventListener('mouseup',onUp);
-  wrap.addEventListener('touchstart',e=>onDown(e.touches[0].clientX),{passive:true});
-  wrap.addEventListener('touchmove',e=>onMove(e.touches[0].clientX),{passive:true});
-  wrap.addEventListener('touchend',onUp,{passive:true});
-
-  requestAnimationFrame(()=>{
+  // Wait for paint before starting
+  requestAnimationFrame(() => {
     featuredTimer = setInterval(()=>{
-      if(featuredPaused) return;
       featuredOffset += 0.4;
-      if(featuredOffset >= loopW) featuredOffset -= loopW;
+      // When we've scrolled one full set, snap back to start seamlessly
+      if (featuredOffset >= loopW) {
+        featuredOffset -= loopW;
+      }
       track.style.transform = `translateX(-${featuredOffset}px)`;
     }, 16);
   });
@@ -375,10 +355,8 @@ function buildCarousel(imgs) {
   const container=document.getElementById('modal-carousel');
   if (!imgs.length){container.innerHTML='';return;}
   if (imgs.length===1){
-    const _w=document.createElement('div'); _w.className='carousel'; _w.style.position='relative';
-    const _i=document.createElement('img'); _i.src=imgs[0]; _i.style.cssText='width:100%;max-height:200px;object-fit:scale-down;display:block;cursor:pointer;'; _i.onerror=()=>_w.style.display='none'; _i.onclick=()=>openZoom(imgs[0]);
-    const _z=document.createElement('button'); _z.className='zoom-trigger'; _z.innerHTML='⤢'; _z.onclick=()=>openZoom(imgs[0]);
-    _w.appendChild(_i); _w.appendChild(_z); container.innerHTML=''; container.appendChild(_w); return;
+    container.innerHTML=`<div class="carousel" style="position:relative"><img src="${imgs[0]}" style="width:100%;max-height:200px;object-fit:scale-down;display:block;" onerror="this.parentElement.style.display='none'"><button class="zoom-trigger" onclick="openZoom('${imgs[0]}')">⤢</button></div>`;
+    return;
   }
   let current=0;
   let loadedImgs=[];
@@ -404,6 +382,7 @@ function buildCarousel(imgs) {
     img.onload=()=>{ loadedImgs.push({src,idx:i}); loaded++; if(loaded===imgs.length) renderCarousel(); };
     img.onerror=()=>{ loaded++; if(loaded===imgs.length) renderCarousel(); };
     slide.appendChild(img); track.appendChild(slide);
+    if(img.complete) img.onload();
   });
 
   function renderCarousel() {
@@ -437,7 +416,6 @@ function buildCarousel(imgs) {
 
     document.getElementById('c-prev').onclick=()=>goTo(current>0?current-1:total-1);
     document.getElementById('c-next').onclick=()=>goTo(current<total-1?current+1:0);
-    goodSlides.forEach(s=>{ const img=s.querySelector('img'); img.style.cursor='pointer'; img.onclick=()=>{ const cur=goodSlides[current]&&goodSlides[current].querySelector('img'); if(cur) openZoom(cur.src); }; });
 
     // Add zoom button overlay
     const zBtn=document.createElement('button');
@@ -481,6 +459,7 @@ function renderModalContent(product, pVariants, colors) {
 
   const colorHTML=colors.length?`
     <div class="size-section">
+      <div class="size-title">Pilih Warna</div>
       <div class="color-filter">
         ${colors.map(c=>`<button class="color-chip ${c===activeColor?'active':''}" data-color="${c}">${c}</button>`).join('')}
       </div>
@@ -492,7 +471,7 @@ function renderModalContent(product, pVariants, colors) {
 
   const sizeHTML=hasVariants?`
     <div class="size-section">
-      <p style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:8px;">Tap <strong>Tersedia</strong> untuk salin info pesanan</p>
+      <div class="size-title">Ukuran Tersedia</div>
       ${shown.length?`
       <table class="size-table">
         <thead><tr>
@@ -504,10 +483,7 @@ function renderModalContent(product, pVariants, colors) {
           ${shown.map(v=>`<tr>
             ${hasSize?`<td><strong>${v.ukuran||'-'}</strong></td>`:''}
             <td style="color:var(--text2);font-size:12px">${v.keterangan||'-'}</td>
-            <td>${String(v.tersedia).toUpperCase()==='TRUE'
-              ? `<span class="badge badge-true" data-copy="${encodeURIComponent([product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,v.warna&&v.warna!=='-'?'Warna: '+v.warna:'',v.ukuran&&v.ukuran!=='-'?'Ukuran: '+v.ukuran:'',v.keterangan?'Keterangan: '+v.keterangan:'','Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\\n'))}">Tersedia</span>`
-              : '<span class="badge badge-false">Habis</span>'
-            }</td>
+            <td><span class="badge badge-${String(v.tersedia).toUpperCase()==='TRUE'?'true':'false'}">${String(v.tersedia).toUpperCase()==='TRUE'?'Tersedia':'Habis'}</span></td>
           </tr>`).join('')}
         </tbody>
       </table>`:'<div style="color:var(--text3);font-size:13px;padding:8px 0">Pilih warna untuk melihat ukuran</div>'}
@@ -526,17 +502,6 @@ function renderModalContent(product, pVariants, colors) {
   content.querySelectorAll('.color-chip').forEach(btn=>{
     btn.onclick=()=>{ activeColor=btn.dataset.color; renderModalContent(product,pVariants,colors); };
   });
-  content.querySelectorAll('.badge-true[data-copy]').forEach(badge=>{
-    badge.onclick=()=>copyText(decodeURIComponent(badge.dataset.copy));
-  });
-  if(!hasVariants){
-    const nvBtn=document.createElement('button');
-    nvBtn.style.cssText='display:block;width:100%;padding:13px;background:var(--accent);color:#0f0f0f;border:none;border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;transition:background 0.2s;';
-    nvBtn.textContent='Salin Info Pesanan';
-    const lines=[product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,'Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\n');
-    nvBtn.onclick=()=>copyText(lines);
-    content.appendChild(nvBtn);
-  }
 }
 
 function closeModal() {
@@ -589,23 +554,6 @@ function initZoom() {
   if(overlay) overlay.onclick=e=>{ if(e.target===overlay) overlay.classList.remove('open'); };
 }
 
-// ── COPY ─────────────────────────────────────────────────────────────────────
-function showToast(msg){ const t=document.getElementById('copy-toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
-function copyText(text){
-  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast('✓ Disalin! Paste ke WhatsApp untuk pesan')).catch(()=>_fbCopy(text)); }
-  else _fbCopy(text);
-}
-function _fbCopy(text){ const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast('✓ Disalin! Paste ke WhatsApp untuk pesan'); }
-
-// ── SEARCH ───────────────────────────────────────────────────────────────────
-let searchQuery='';
-(function(){
-  const wrap=document.getElementById('search-wrap'), btn=document.getElementById('search-icon-btn'), input=document.getElementById('search-input');
-  if(!wrap||!btn||!input) return;
-  btn.onclick=()=>{ wrap.classList.toggle('open'); if(wrap.classList.contains('open')) input.focus(); else { input.value=''; searchQuery=''; renderGrid(); } };
-  input.oninput=()=>{ searchQuery=input.value.trim(); renderGrid(); };
-})();
-
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -653,6 +601,5 @@ init();
   </div>
 </div>
 
-<div class="copy-toast" id="copy-toast"></div>
 </body>
 </html>
