@@ -408,6 +408,8 @@ function buildCarousel(imgs) {
       return img && !img.dataset.error;
     });
     track.innerHTML='';
+    track.style.transform='translateX(0)';
+    track.style.transition='none';
     goodSlides.forEach(s=>track.appendChild(s));
     const total=goodSlides.length;
     if(total===0){container.style.display='none';return;}
