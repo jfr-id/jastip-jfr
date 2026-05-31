@@ -66,7 +66,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
-.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent;position:relative;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:calc(92vh - env(safe-area-inset-bottom));overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);scrollbar-width:thin;scrollbar-color:var(--border) transparent;position:relative;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
 .modal-close{position:absolute;top:10px;right:10px;width:36px;height:36px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
@@ -137,6 +137,18 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .zoom-trigger:hover{background:rgba(0,0,0,0.8);}
 
 #featured-section{display:block;width:100%;overflow:hidden;}
+
+.search-wrap{display:flex;align-items:center;overflow:hidden;border:1px solid rgba(255,255,255,0.25);border-radius:999px;transition:width 0.25s ease;width:30px;background:rgba(255,255,255,0.1);}
+.search-wrap.open{width:160px;}
+.search-icon-btn{width:30px;height:30px;flex-shrink:0;background:transparent;border:none;color:rgba(255,255,255,0.8);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.search-input{border:none;background:transparent;color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;width:0;padding:0;outline:none;}
+.search-wrap.open .search-input{width:125px;padding:0 8px 0 2px;}
+.search-input::placeholder{color:rgba(255,255,255,0.4);}
+.copy-toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:999px;font-size:12px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.badge-true{cursor:pointer;}
+.badge-true:hover{background:rgba(76,175,125,0.35)!important;}
+.badge-false{cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -145,6 +157,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
   <div class="header-top">
     <div class="brand">Jastip <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:300;margin-left:6px;letter-spacing:0.12em;text-transform:uppercase;">by jfr</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <div class="search-wrap" id="search-wrap"><button class="search-icon-btn" id="search-icon-btn">🔍</button><input class="search-input" id="search-input" type="text" placeholder="Nama / merk..."></div>
       <button id="theme-toggle" title="Toggle tema" style="background:transparent;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">🌙</button>
       <a class="modal-order" id="wa-header" href="#" target="_blank" style="display:none;width:auto;padding:7px 16px;font-size:13px;margin-top:0;">Order via WA</a>
     </div>
@@ -195,7 +208,7 @@ const GIDS = { products_public:'120988448', variants:'212657426', settings:'7958
 let products=[], variants=[], settings={};
 let activeCategory='Semua', activeSort='name';
 let savedScrollY=0, savedCategory='Semua';
-let featuredTimer=null, featuredOffset=0;
+let featuredTimer=null, featuredOffset=0, featuredPaused=false, featuredResumeTimer=null;
 
 // ── FETCH CSV ────────────────────────────────────────────────────────────────
 async function fetchSheet(name) {
@@ -249,6 +262,7 @@ function isFeatured(p) { return String(p.featured).toUpperCase()==='TRUE'; }
 function getFiltered() {
   let list = products.filter(isActive);
   if (activeCategory !== 'Semua') list = list.filter(p => p.kategori===activeCategory);
+  if (typeof searchQuery!=='undefined'&&searchQuery){ const q=searchQuery.toLowerCase(); list=list.filter(p=>(p.nama||'').toLowerCase().includes(q)||(p.merk||'').toLowerCase().includes(q)); }
   if (activeSort==='name') list = [...list].sort((a,b)=>a.nama.localeCompare(b.nama,'id'));
   else if (activeSort==='cat') list = [...list].sort((a,b)=>a.kategori.localeCompare(b.kategori,'id')||a.nama.localeCompare(b.nama,'id'));
   else list = [...list].sort((a,b)=>(Number(a.urutan)||99)-(Number(b.urutan)||99));
@@ -330,21 +344,27 @@ function buildFeatured() {
 function startFeaturedScroll(track, count) {
   if (featuredTimer) clearInterval(featuredTimer);
   const cardW = 140 + 12;
-  // loopW = one full set of original cards
-  // We rendered many duplicates; loop point is after first full set
   const loopW = cardW * count;
   featuredOffset = 0;
-  track.style.transition = 'none';
   track.style.transform = 'translateX(0px)';
+  const wrap = track.parentElement.parentElement;
 
-  // Wait for paint before starting
-  requestAnimationFrame(() => {
+  let dragStart=null, dragBase=0;
+  function onDown(x){ dragStart=x; dragBase=featuredOffset; featuredPaused=true; if(featuredResumeTimer) clearTimeout(featuredResumeTimer); }
+  function onMove(x){ if(dragStart===null) return; let o=(dragBase+(dragStart-x))%loopW; if(o<0)o+=loopW; featuredOffset=o; track.style.transform=`translateX(-${featuredOffset}px)`; }
+  function onUp(){ dragStart=null; featuredResumeTimer=setTimeout(()=>{featuredPaused=false;},3000); }
+  wrap.addEventListener('mousedown',e=>onDown(e.clientX));
+  window.addEventListener('mousemove',e=>{if(dragStart!==null)onMove(e.clientX);});
+  window.addEventListener('mouseup',onUp);
+  wrap.addEventListener('touchstart',e=>onDown(e.touches[0].clientX),{passive:true});
+  wrap.addEventListener('touchmove',e=>onMove(e.touches[0].clientX),{passive:true});
+  wrap.addEventListener('touchend',onUp,{passive:true});
+
+  requestAnimationFrame(()=>{
     featuredTimer = setInterval(()=>{
+      if(featuredPaused) return;
       featuredOffset += 0.4;
-      // When we've scrolled one full set, snap back to start seamlessly
-      if (featuredOffset >= loopW) {
-        featuredOffset -= loopW;
-      }
+      if(featuredOffset >= loopW) featuredOffset -= loopW;
       track.style.transform = `translateX(-${featuredOffset}px)`;
     }, 16);
   });
@@ -372,33 +392,29 @@ function buildCarousel(imgs) {
   const track=document.getElementById('c-track');
   const dotsEl=document.getElementById('c-dots');
 
-  // Load images, skip errors
   let loaded=0;
   imgs.forEach((src,i)=>{
     const slide=document.createElement('div');
     slide.className='carousel-slide';
     const img=document.createElement('img');
     img.src=src; img.alt='';
-    img.onload=()=>{ loadedImgs.push({src,idx:i}); loaded++; if(loaded===imgs.length) renderCarousel(); };
-    img.onerror=()=>{ loaded++; if(loaded===imgs.length) renderCarousel(); };
+    function settle(){ loaded++; if(loaded===imgs.length) renderCarousel(); }
+    img.onload=settle; img.onerror=settle;
     slide.appendChild(img); track.appendChild(slide);
-    if(img.complete) img.onload();
+    if(img.complete) settle();
   });
 
   function renderCarousel() {
-    // Only keep slides that loaded
     const goodSlides=[...track.querySelectorAll('.carousel-slide')].filter(s=>{
       const img=s.querySelector('img');
       return img && img.complete && img.naturalWidth>0;
     });
-    // Rebuild track with only good slides
     track.innerHTML='';
     goodSlides.forEach(s=>track.appendChild(s));
     const total=goodSlides.length;
     if(total===0){container.style.display='none';return;}
     if(total===1){document.getElementById('c-prev').style.display='none';document.getElementById('c-next').style.display='none';}
 
-    // Build dots
     dotsEl.innerHTML='';
     goodSlides.forEach((_,i)=>{
       const dot=document.createElement('button');
@@ -408,31 +424,34 @@ function buildCarousel(imgs) {
     });
 
     function goTo(n){
-      current=Math.max(0,Math.min(n,total-1));
+      current=((n%total)+total)%total;
       track.style.transform=`translateX(-${current*100}%)`;
       track.style.transition='transform 0.3s ease';
       dotsEl.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===current));
     }
 
-    document.getElementById('c-prev').onclick=()=>goTo(current>0?current-1:total-1);
-    document.getElementById('c-next').onclick=()=>goTo(current<total-1?current+1:0);
+    document.getElementById('c-prev').onclick=()=>goTo(current-1);
+    document.getElementById('c-next').onclick=()=>goTo(current+1);
 
-    // Add zoom button overlay
+    // click image = zoom current
+    goodSlides.forEach(s=>{
+      s.querySelector('img').style.cursor='pointer';
+      s.querySelector('img').onclick=()=>{ if(goodSlides[current]) openZoom(goodSlides[current].querySelector('img').src); };
+    });
+
     const zBtn=document.createElement('button');
-    zBtn.className='zoom-trigger';
-    zBtn.innerHTML='⤢';
-    zBtn.onclick=()=>{
-      const visibleImg=goodSlides[current]&&goodSlides[current].querySelector('img');
-      if(visibleImg) openZoom(visibleImg.src);
-    };
+    zBtn.className='zoom-trigger'; zBtn.innerHTML='⤢';
+    zBtn.onclick=()=>{ if(goodSlides[current]) openZoom(goodSlides[current].querySelector('img').src); };
     container.querySelector('.carousel').appendChild(zBtn);
 
-    // Touch swipe
-    let tx=0;
-    track.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+    // swipe
+    let tx=0, moved=false;
+    track.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;moved=false;},{passive:true});
+    track.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientX-tx)>8)moved=true;},{passive:true});
     track.addEventListener('touchend',e=>{
+      if(!moved) return;
       const diff=tx-e.changedTouches[0].clientX;
-      if(Math.abs(diff)>40) goTo(diff>0?(current<total-1?current+1:0):(current>0?current-1:total-1));
+      if(Math.abs(diff)>40) goTo(diff>0?current+1:current-1);
     },{passive:true});
   }
 }
@@ -472,6 +491,7 @@ function renderModalContent(product, pVariants, colors) {
   const sizeHTML=hasVariants?`
     <div class="size-section">
       <div class="size-title">Ukuran Tersedia</div>
+      <p style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:8px;">Tap <strong>Tersedia</strong> untuk salin info pesanan</p>
       ${shown.length?`
       <table class="size-table">
         <thead><tr>
@@ -483,7 +503,10 @@ function renderModalContent(product, pVariants, colors) {
           ${shown.map(v=>`<tr>
             ${hasSize?`<td><strong>${v.ukuran||'-'}</strong></td>`:''}
             <td style="color:var(--text2);font-size:12px">${v.keterangan||'-'}</td>
-            <td><span class="badge badge-${String(v.tersedia).toUpperCase()==='TRUE'?'true':'false'}">${String(v.tersedia).toUpperCase()==='TRUE'?'Tersedia':'Habis'}</span></td>
+            <td>${String(v.tersedia).toUpperCase()==='TRUE'
+              ? `<span class="badge badge-true" data-copy="${encodeURIComponent([product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,v.warna&&v.warna!=='-'?'Warna: '+v.warna:'',v.ukuran&&v.ukuran!=='-'?'Ukuran: '+v.ukuran:'',v.keterangan?'Keterangan: '+v.keterangan:'','Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\\n'))}">Tersedia</span>`
+              : '<span class="badge badge-false">Habis</span>'
+            }</td>
           </tr>`).join('')}
         </tbody>
       </table>`:'<div style="color:var(--text3);font-size:13px;padding:8px 0">Pilih warna untuk melihat ukuran</div>'}
@@ -502,6 +525,17 @@ function renderModalContent(product, pVariants, colors) {
   content.querySelectorAll('.color-chip').forEach(btn=>{
     btn.onclick=()=>{ activeColor=btn.dataset.color; renderModalContent(product,pVariants,colors); };
   });
+  content.querySelectorAll('.badge-true[data-copy]').forEach(badge=>{
+    badge.onclick=()=>copyText(decodeURIComponent(badge.dataset.copy));
+  });
+  if(!hasVariants){
+    const nvBtn=document.createElement('button');
+    nvBtn.style.cssText='display:block;width:100%;padding:13px;background:var(--accent);color:#0f0f0f;border:none;border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;';
+    nvBtn.textContent='Salin Info Pesanan';
+    const lines=[product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,'Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\n');
+    nvBtn.onclick=()=>copyText(lines);
+    content.appendChild(nvBtn);
+  }
 }
 
 function closeModal() {
@@ -554,6 +588,23 @@ function initZoom() {
   if(overlay) overlay.onclick=e=>{ if(e.target===overlay) overlay.classList.remove('open'); };
 }
 
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+let searchQuery='';
+(function(){
+  const wrap=document.getElementById('search-wrap'), btn=document.getElementById('search-icon-btn'), input=document.getElementById('search-input');
+  if(!wrap||!btn||!input) return;
+  btn.onclick=()=>{ wrap.classList.toggle('open'); if(wrap.classList.contains('open')) input.focus(); else { input.value=''; searchQuery=''; renderGrid(); } };
+  input.oninput=()=>{ searchQuery=input.value.trim(); renderGrid(); };
+})();
+
+// ── COPY ─────────────────────────────────────────────────────────────────────
+function showToast(msg){ const t=document.getElementById('copy-toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function copyText(text){
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast('✓ Disalin! Paste ke WhatsApp untuk pesan')).catch(()=>_fbCopy(text)); }
+  else _fbCopy(text);
+}
+function _fbCopy(text){ const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast('✓ Disalin! Paste ke WhatsApp untuk pesan'); }
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -601,5 +652,6 @@ init();
   </div>
 </div>
 
+<div class="copy-toast" id="copy-toast"></div>
 </body>
 </html>
