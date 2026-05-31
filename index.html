@@ -405,7 +405,8 @@ function buildCarousel(imgs) {
   allSlides.forEach(({img,src})=>{
     let settled=false;
     function settle(){ if(settled) return; settled=true; loaded++; if(loaded===imgs.length) renderCarousel(); }
-    img.onload=settle; img.onerror=settle;
+    img.onerror=()=>{ img.dataset.error='1'; settle(); };
+    img.onload=settle;
     img.src=src;
     if(img.complete) settle();
   });
@@ -413,7 +414,7 @@ function buildCarousel(imgs) {
   function renderCarousel() {
     const goodSlides=[...track.querySelectorAll('.carousel-slide')].filter(s=>{
       const img=s.querySelector('img');
-      return img && img.complete && img.naturalWidth>0;
+      return img && !img.dataset.error;
     });
     track.innerHTML='';
     goodSlides.forEach(s=>track.appendChild(s));
