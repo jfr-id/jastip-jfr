@@ -390,26 +390,17 @@ function buildCarousel(imgs) {
   const track=document.getElementById('c-track');
   const dotsEl=document.getElementById('c-dots');
 
-  let loaded=0;
-  const allSlides=[];
-  imgs.forEach((src,i)=>{
+  // Build all slides first
+  imgs.forEach(src=>{
     const slide=document.createElement('div');
     slide.className='carousel-slide';
     const img=document.createElement('img');
-    img.alt='';
+    img.alt=''; img.src=src;
     slide.appendChild(img);
     track.appendChild(slide);
-    allSlides.push({slide,img,src});
   });
-  // Set src after all slides appended, so renderCarousel sees full track
-  allSlides.forEach(({img,src})=>{
-    let settled=false;
-    function settle(){ if(settled) return; settled=true; loaded++; if(loaded===imgs.length) renderCarousel(); }
-    img.onerror=()=>{ img.dataset.error='1'; settle(); };
-    img.onload=settle;
-    img.src=src;
-    if(img.complete) settle();
-  });
+  // Wait a tick for browser to register, then render
+  setTimeout(renderCarousel, 50);
 
   function renderCarousel() {
     const goodSlides=[...track.querySelectorAll('.carousel-slide')].filter(s=>{
