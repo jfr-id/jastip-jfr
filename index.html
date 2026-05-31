@@ -390,7 +390,6 @@ function buildCarousel(imgs) {
   const track=document.getElementById('c-track');
   const dotsEl=document.getElementById('c-dots');
 
-  // Build all slides first
   imgs.forEach(src=>{
     const slide=document.createElement('div');
     slide.className='carousel-slide';
@@ -399,8 +398,7 @@ function buildCarousel(imgs) {
     slide.appendChild(img);
     track.appendChild(slide);
   });
-  // Wait a tick for browser to register, then render
-  setTimeout(renderCarousel, 50);
+  renderCarousel();
 
   function renderCarousel() {
     const goodSlides=[...track.querySelectorAll('.carousel-slide')].filter(s=>{
