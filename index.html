@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(15,15,15,0.96);backdrop-filter:blur(12px);z-index:100;}
 .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
 .brand{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.02em;color:var(--accent);}
-.brand-sub{font-size:11px;color:rgba(255,255,255,0.75);margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
+.brand-sub{font-size:11px;color:#ffffff;margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
 .brand-sub.visible{display:block;}
 .filter-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-top:12px;}
 .filter-bar::-webkit-scrollbar{display:none;}
@@ -59,7 +59,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .card-img{width:100%;height:100%;object-fit:cover;display:block;}
 .card-body{padding:12px;}
 .card-merk{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;}
-.card-name{font-size:13px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-name{font-size:13px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:0px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .card-price{font-family:'Playfair Display',serif;font-size:15px;color:var(--accent);}
 
 /* MODAL */
@@ -89,7 +89,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .modal-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
 .modal-kategori{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.12em;}
 .modal-merk{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;}
-.modal-name{font-family:'Playfair Display',serif;font-size:20px;line-height:1.3;margin-bottom:10px;}
+.modal-name{font-family:'Playfair Display',serif;font-size:20px;line-height:1.3;margin-bottom:4px;}
 .modal-price{font-family:'Playfair Display',serif;font-size:24px;color:var(--accent);margin-bottom:20px;}
 .size-section{margin-bottom:20px;}
 .size-title{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:10px;}
@@ -148,6 +148,21 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .badge-true{cursor:pointer;}
 .badge-true:hover{background:rgba(76,175,125,0.35)!important;}
 .badge-false{cursor:not-allowed;}
+
+/* POPUP */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.popup-overlay.open{display:flex;}
+.popup-box{background:var(--surface);border-radius:16px;padding:20px;width:min(340px,88vw);position:relative;animation:popIn 0.3s cubic-bezier(0.16,1,0.3,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
+.popup-close{position:absolute;top:10px;right:10px;width:28px;height:28px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500;}
+.popup-img{width:100%;border-radius:10px;display:block;margin-bottom:12px;}
+.popup-teks{font-size:14px;color:var(--text);line-height:1.6;}
+.info-btn{width:30px;height:30px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:50%;color:rgba(255,255,255,0.8);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.info-btn:hover{background:rgba(255,255,255,0.15);}
+@keyframes minimizeToBtn{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(0.1);}}
+.popup-box.minimizing{animation:minimizeToBtn 0.3s cubic-bezier(0.4,0,1,1) forwards;}
+
+.filter-sekat{width:1px;background:rgba(255,255,255,0.2);margin:0 4px;flex-shrink:0;align-self:stretch;}
 </style>
 </head>
 <body>
@@ -157,6 +172,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
     <div class="brand">Jastip <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:300;margin-left:6px;letter-spacing:0.12em;text-transform:uppercase;">by jfr</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="search-wrap" id="search-wrap"><button class="search-icon-btn" id="search-icon-btn">🔍</button><input class="search-input" id="search-input" type="text" placeholder="Nama / merk..."></div>
+      <button class="info-btn" id="info-btn" style="display:none">ⓘ</button>
       <button id="theme-toggle" title="Toggle tema" style="background:transparent;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">🌙</button>
       <a class="modal-order" id="wa-header" href="#" target="_blank" style="display:none;width:auto;padding:7px 16px;font-size:13px;margin-top:0;">Order via WA</a>
     </div>
@@ -205,7 +221,7 @@ const WA_NUMBER = '62xxxxxxxxxx';
 const GIDS = { products_public:'120988448', variants:'212657426', settings:'795819937' };
 
 let products=[], variants=[], settings={};
-let activeCategory='Semua', activeSort='name';
+let activeCategory='Semua', activeSort='name', activeGender='';
 let savedScrollY=0, savedCategory='Semua';
 let featuredTimer=null, featuredOffset=0, featuredPaused=false, featuredResumeTimer=null;
 
@@ -261,6 +277,7 @@ function isFeatured(p) { return String(p.featured).toUpperCase()==='TRUE'; }
 function getFiltered() {
   let list = products.filter(isActive);
   if (activeCategory !== 'Semua') list = list.filter(p => p.kategori===activeCategory);
+  if (activeGender) list=list.filter(p=>(p.gender||'').toLowerCase().includes(activeGender.toLowerCase()));
   if (typeof searchQuery!=='undefined'&&searchQuery){ const q=searchQuery.toLowerCase(); list=list.filter(p=>(p.nama||'').toLowerCase().includes(q)||(p.merk||'').toLowerCase().includes(q)); }
   if (activeSort==='name') list = [...list].sort((a,b)=>a.nama.localeCompare(b.nama,'id'));
   else if (activeSort==='cat') list = [...list].sort((a,b)=>a.kategori.localeCompare(b.kategori,'id')||a.nama.localeCompare(b.nama,'id'));
@@ -300,8 +317,13 @@ function renderGrid() {
 // ── FILTER CHIPS ─────────────────────────────────────────────────────────────
 function buildFilters() {
   const bar=document.getElementById('filter-bar');
-  const cats=['Semua',...new Set(products.filter(isActive).map(p=>p.kategori).filter(Boolean))];
+  // Categories sorted A-Z, Semua first
+  const catSet=[...new Set(products.filter(isActive).map(p=>p.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+  const cats=['Semua',...catSet];
+  // Genders sorted A-Z
+  const genders=[...new Set(products.filter(isActive).map(p=>p.gender).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
   bar.innerHTML='';
+  // Category chips
   cats.forEach(cat=>{
     const btn=document.createElement('button');
     btn.className='chip'+(cat===activeCategory?' active':'');
@@ -309,6 +331,19 @@ function buildFilters() {
     btn.onclick=()=>{ activeCategory=cat; buildFilters(); renderGrid(); };
     bar.appendChild(btn);
   });
+  // Sekat + gender chips (only if genders exist)
+  if(genders.length){
+    const sekat=document.createElement('div');
+    sekat.className='filter-sekat';
+    bar.appendChild(sekat);
+    genders.forEach(g=>{
+      const btn=document.createElement('button');
+      btn.className='chip'+(g===activeGender?' active':'');
+      btn.dataset.gender=g; btn.textContent=g;
+      btn.onclick=()=>{ activeGender=activeGender===g?'':g; buildFilters(); renderGrid(); };
+      bar.appendChild(btn);
+    });
+  }
 }
 
 // ── FEATURED CAROUSEL ────────────────────────────────────────────────────────
@@ -488,8 +523,8 @@ function renderModalContent(product, pVariants, colors) {
 
   content.innerHTML=`
     <div class="modal-top-row">
-      <div class="modal-kategori">${product.kategori||''}</div>
       ${product.merk?`<div class="modal-merk">${product.merk}</div>`:''}
+      <div class="modal-kategori">${product.kategori||''}</div>
     </div>
     <div class="modal-name">${product.nama}</div>
     <div class="modal-price">${formatIDR(product.harga_jual_idr)}</div>
@@ -579,6 +614,44 @@ function copyText(text){
 }
 function _fbCopy(text){ const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast('✓ Disalin! Paste ke WhatsApp untuk pesan'); }
 
+// ── POPUP ────────────────────────────────────────────────────────────────────
+function initPopup() {
+  const s = settings;
+  if (!s.popup_aktif || String(s.popup_aktif).toUpperCase() !== 'TRUE') return;
+
+  const overlay = document.getElementById('popup-overlay');
+  const box     = document.getElementById('popup-box');
+  const body    = document.getElementById('popup-body');
+  const closeBtn= document.getElementById('popup-close');
+  const infoBtn = document.getElementById('info-btn');
+
+  // Build content
+  let html = '';
+  if (s.popup_gambar && s.popup_gambar.startsWith('http'))
+    html += `<img class="popup-img" src="${s.popup_gambar}" alt="promo">`;
+  if (s.popup_teks && s.popup_teks.trim())
+    html += `<div class="popup-teks">${s.popup_teks}</div>`;
+  if (!html) return;
+  body.innerHTML = html;
+
+  // Show popup
+  overlay.classList.add('open');
+  infoBtn.style.display = 'flex';
+
+  // Close with minimize animation
+  function closePopup() {
+    box.classList.add('minimizing');
+    setTimeout(()=>{
+      overlay.classList.remove('open');
+      box.classList.remove('minimizing');
+    }, 300);
+  }
+
+  closeBtn.onclick = closePopup;
+  overlay.onclick  = e => { if (e.target === overlay) closePopup(); };
+  infoBtn.onclick  = () => overlay.classList.add('open');
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -602,6 +675,7 @@ async function init() {
     document.getElementById('loading').style.display='none';
     initTheme();
     initZoom();
+    initPopup();
     // Set default sort button active
     document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===activeSort));
     buildFilters();
@@ -627,5 +701,13 @@ init();
 </div>
 
 <div class="copy-toast" id="copy-toast"></div>
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup-box" id="popup-box">
+    <button class="popup-close" id="popup-close">✕</button>
+    <div id="popup-body"></div>
+  </div>
+</div>
 </body>
 </html>
