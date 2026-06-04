@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Katalog Jastip</title>
+<link rel="icon" href="favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -163,6 +164,13 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .popup-box.minimizing{animation:minimizeToBtn 0.3s cubic-bezier(0.4,0,1,1) forwards;}
 
 .filter-sekat{width:1px;background:rgba(255,255,255,0.2);margin:0 4px;flex-shrink:0;align-self:stretch;}
+
+/* SOLD */
+.card-img-wrap{position:relative;}
+.sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;border-radius:0;}
+.sold-badge{background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:6px 18px;border-radius:4px;letter-spacing:0.12em;text-transform:uppercase;}
+.card.sold{cursor:not-allowed;}
+.card.sold:hover{transform:none;box-shadow:none;border-color:var(--border);}
 </style>
 </head>
 <body>
@@ -270,7 +278,8 @@ function getImages(p) {
   return imgs;
 }
 
-function isActive(p) { return String(p.aktif).toUpperCase()!=='FALSE'; }
+function isActive(p) { const v=String(p.aktif).toUpperCase(); return v!=='FALSE'; }
+function isSold(p) { return String(p.aktif).toUpperCase()==='SOLD'; }
 function isFeatured(p) { return String(p.featured).toUpperCase()==='TRUE'; }
 
 // ── FILTER & SORT ────────────────────────────────────────────────────────────
@@ -300,16 +309,19 @@ function renderGrid() {
     const card=document.createElement('div');
     card.className='card';
     card.style.animationDelay=`${i*40}ms`;
+    const sold=isSold(p);
+    if(sold) card.classList.add('sold');
     card.innerHTML=`
       <div class="card-img-wrap">
         ${imgs[0]?`<img class="card-img" src="${imgs[0]}" alt="${p.nama}" loading="lazy" onerror="this.style.display='none'">`:''}
+        ${sold?`<div class="sold-overlay"><span class="sold-badge">Sold</span></div>`:''}
       </div>
       <div class="card-body">
         ${p.merk?`<div class="card-merk">${p.merk}</div>`:''}
         <div class="card-name">${p.nama}</div>
         <div class="card-price">${formatIDR(p.harga_jual_idr)}</div>
       </div>`;
-    card.onclick=()=>openModal(p);
+    if(!sold) card.onclick=()=>openModal(p);
     grid.appendChild(card);
   });
 }
