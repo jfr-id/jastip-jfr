@@ -27,10 +27,12 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .brand-sub{font-size:11px;color:#ffffff;margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
 .brand-sub.visible{display:block;}
 .filter-bar{display:flex;align-items:center;gap:0;margin-top:12px;overflow:hidden;}
-.filter-left{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex:1;min-width:0;}
+.filter-left{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
 .filter-left::-webkit-scrollbar{display:none;}
-.filter-right{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-shrink:0;min-width:30vw;}
+.filter-left.split{flex:1;min-width:0;}
+.filter-right{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-shrink:0;}
 .filter-right::-webkit-scrollbar{display:none;}
+.filter-right.split{min-width:30vw;}
 .filter-divider{width:1px;background:rgba(255,255,255,0.25);margin:0 8px;align-self:stretch;flex-shrink:0;}
 .chip{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .chip:hover{border-color:var(--accent);color:var(--accent);}
@@ -171,10 +173,10 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 
 /* SOLD */
 .card-img-wrap{position:relative;}
-.sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:0;pointer-events:none;}
+.card{position:relative;}
+.sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:var(--radius);pointer-events:none;z-index:1;}
 .sold-badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;z-index:2;}
 .card.sold:active{transform:scale(0.97);box-shadow:none;}
-.card-body-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);pointer-events:none;border-radius:0 0 var(--radius) var(--radius);}
 </style>
 </head>
 <body>
@@ -320,14 +322,13 @@ function renderGrid() {
     card.innerHTML=`
       <div class="card-img-wrap">
         ${imgs[0]?`<img class="card-img" src="${imgs[0]}" alt="${p.nama}" loading="lazy" onerror="this.style.display='none'">`:''}
-        ${sold?`<div class="sold-overlay"></div><span class="sold-badge">Sold Out</span>`:''}
       </div>
-      <div class="card-body" style="position:relative;">
-        ${sold?'<div class="card-body-overlay"></div>':''}
+      <div class="card-body">
         ${p.merk?`<div class="card-merk">${p.merk}</div>`:''}
         <div class="card-name">${p.nama}</div>
         <div class="card-price">${formatIDR(p.harga_jual_idr)}</div>
-      </div>`;
+      </div>
+      ${sold?`<div class="sold-overlay"></div><span class="sold-badge">Sold Out</span>`:''}`;
     card.onclick=()=>{ if(!sold) openModal(p); };
     grid.appendChild(card);
   });
@@ -342,7 +343,7 @@ function buildFilters() {
   const cats=['Semua',...catSet];
   const genders=[...new Set(products.filter(isActive).map(p=>p.gender).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
   left.innerHTML=''; right.innerHTML='';
-  // Category chips (left)
+
   cats.forEach(cat=>{
     const btn=document.createElement('button');
     btn.className='chip'+(cat===activeCategory?' active':'');
@@ -350,7 +351,7 @@ function buildFilters() {
     btn.onclick=()=>{ activeCategory=cat; buildFilters(); renderGrid(); };
     left.appendChild(btn);
   });
-  // Gender chips (right) with divider
+
   if(genders.length){
     divider.style.display='block';
     genders.forEach(g=>{
@@ -360,8 +361,24 @@ function buildFilters() {
       btn.onclick=()=>{ activeGender=activeGender===g?'':g; buildFilters(); renderGrid(); };
       right.appendChild(btn);
     });
+    // Detect if all chips fit — check after paint
+    requestAnimationFrame(()=>{
+      const barW=document.getElementById('filter-bar').offsetWidth;
+      const leftW=left.scrollWidth;
+      const rightW=right.scrollWidth;
+      const divW=18; // divider + margins
+      const fits=(leftW+rightW+divW)<=barW;
+      if(fits){
+        left.classList.remove('split'); right.classList.remove('split');
+        left.style.overflow='visible'; right.style.overflow='visible';
+      } else {
+        left.classList.add('split'); right.classList.add('split');
+        left.style.overflow=''; right.style.overflow='';
+      }
+    });
   } else {
     divider.style.display='none';
+    left.classList.remove('split'); right.classList.remove('split');
   }
 }
 
@@ -700,6 +717,7 @@ async function init() {
     buildFilters();
     buildFeatured();
     renderGrid();
+    window.addEventListener('resize', buildFilters);
   } catch(err) {
     document.getElementById('loading').style.display='none';
     document.getElementById('error-container').innerHTML=`
