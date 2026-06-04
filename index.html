@@ -26,14 +26,9 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .brand{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.02em;color:var(--accent);}
 .brand-sub{font-size:11px;color:#ffffff;margin-left:1px;margin-bottom:12px;line-height:1.5;display:none;}
 .brand-sub.visible{display:block;}
-.filter-bar{display:flex;align-items:center;gap:0;margin-top:12px;overflow:hidden;}
-.filter-left{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
-.filter-left::-webkit-scrollbar{display:none;}
-.filter-left.split{flex:1;min-width:0;}
-.filter-right{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-shrink:0;}
-.filter-right::-webkit-scrollbar{display:none;}
-.filter-right.split{min-width:30vw;}
-.filter-divider{width:1px;background:rgba(255,255,255,0.25);margin:0 8px;align-self:stretch;flex-shrink:0;}
+.filter-bar{display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-top:12px;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.filter-divider{width:1px;height:20px;background:rgba(255,255,255,0.3);flex-shrink:0;}
 .chip{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .chip:hover{border-color:var(--accent);color:var(--accent);}
 .chip.active{background:var(--accent);border-color:var(--accent);color:#0f0f0f;font-weight:500;}
@@ -192,11 +187,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
     </div>
   </div>
   <div class="brand-sub" id="brand-sub"></div>
-  <div class="filter-bar" id="filter-bar">
-    <div class="filter-left" id="filter-left"></div>
-    <div class="filter-divider" id="filter-divider" style="display:none"></div>
-    <div class="filter-right" id="filter-right"></div>
-  </div>
+  <div class="filter-bar" id="filter-bar"></div>
 </header>
 
 <div id="featured-section" style="display:none;">
@@ -336,49 +327,31 @@ function renderGrid() {
 
 // ── FILTER CHIPS ─────────────────────────────────────────────────────────────
 function buildFilters() {
-  const left=document.getElementById('filter-left');
-  const right=document.getElementById('filter-right');
-  const divider=document.getElementById('filter-divider');
+  const bar=document.getElementById('filter-bar');
   const catSet=[...new Set(products.filter(isActive).map(p=>p.kategori).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
   const cats=['Semua',...catSet];
   const genders=[...new Set(products.filter(isActive).map(p=>p.gender).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
-  left.innerHTML=''; right.innerHTML='';
+  bar.innerHTML='';
 
   cats.forEach(cat=>{
     const btn=document.createElement('button');
     btn.className='chip'+(cat===activeCategory?' active':'');
     btn.textContent=cat;
     btn.onclick=()=>{ activeCategory=cat; buildFilters(); renderGrid(); };
-    left.appendChild(btn);
+    bar.appendChild(btn);
   });
 
   if(genders.length){
-    divider.style.display='block';
+    const div=document.createElement('div');
+    div.className='filter-divider';
+    bar.appendChild(div);
     genders.forEach(g=>{
       const btn=document.createElement('button');
       btn.className='chip'+(g===activeGender?' active':'');
       btn.textContent=g;
       btn.onclick=()=>{ activeGender=activeGender===g?'':g; buildFilters(); renderGrid(); };
-      right.appendChild(btn);
+      bar.appendChild(btn);
     });
-    // Detect if all chips fit — check after paint
-    requestAnimationFrame(()=>{
-      const barW=document.getElementById('filter-bar').offsetWidth;
-      const leftW=left.scrollWidth;
-      const rightW=right.scrollWidth;
-      const divW=18; // divider + margins
-      const fits=(leftW+rightW+divW)<=barW;
-      if(fits){
-        left.classList.remove('split'); right.classList.remove('split');
-        left.style.overflow='visible'; right.style.overflow='visible';
-      } else {
-        left.classList.add('split'); right.classList.add('split');
-        left.style.overflow=''; right.style.overflow='';
-      }
-    });
-  } else {
-    divider.style.display='none';
-    left.classList.remove('split'); right.classList.remove('split');
   }
 }
 
@@ -717,7 +690,6 @@ async function init() {
     buildFilters();
     buildFeatured();
     renderGrid();
-    window.addEventListener('resize', buildFilters);
   } catch(err) {
     document.getElementById('loading').style.display='none';
     document.getElementById('error-container').innerHTML=`
