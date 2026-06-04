@@ -29,7 +29,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .filter-bar{display:flex;align-items:center;gap:0;margin-top:12px;overflow:hidden;}
 .filter-left{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex:1;min-width:0;}
 .filter-left::-webkit-scrollbar{display:none;}
-.filter-right{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-shrink:0;}
+.filter-right{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;flex-shrink:0;min-width:30vw;}
 .filter-right::-webkit-scrollbar{display:none;}
 .filter-divider{width:1px;background:rgba(255,255,255,0.25);margin:0 8px;align-self:stretch;flex-shrink:0;}
 .chip{flex-shrink:0;padding:6px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
@@ -171,9 +171,10 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 
 /* SOLD */
 .card-img-wrap{position:relative;}
-.sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.18);border-radius:0;pointer-events:none;}
-.sold-badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;z-index:2;}
+.sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:0;pointer-events:none;}
+.sold-badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;z-index:2;}
 .card.sold:active{transform:scale(0.97);box-shadow:none;}
+.card-body-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);pointer-events:none;border-radius:0 0 var(--radius) var(--radius);}
 </style>
 </head>
 <body>
@@ -319,9 +320,10 @@ function renderGrid() {
     card.innerHTML=`
       <div class="card-img-wrap">
         ${imgs[0]?`<img class="card-img" src="${imgs[0]}" alt="${p.nama}" loading="lazy" onerror="this.style.display='none'">`:''}
-        ${sold?`<div class="sold-overlay"></div><span class="sold-badge">Sold</span>`:''}
+        ${sold?`<div class="sold-overlay"></div><span class="sold-badge">Sold Out</span>`:''}
       </div>
-      <div class="card-body">
+      <div class="card-body" style="position:relative;">
+        ${sold?'<div class="card-body-overlay"></div>':''}
         ${p.merk?`<div class="card-merk">${p.merk}</div>`:''}
         <div class="card-name">${p.nama}</div>
         <div class="card-price">${formatIDR(p.harga_jual_idr)}</div>
