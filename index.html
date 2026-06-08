@@ -88,7 +88,7 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 
 /* MODAL CONTENT */
 .modal-content{padding:16px 20px 32px;}
-.modal-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+.modal-top-row{display:none;}
 .modal-kategori{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.12em;}
 .modal-merk{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;}
 .modal-name{font-family:'Playfair Display',serif;font-size:20px;line-height:1.3;margin-bottom:4px;}
@@ -172,6 +172,19 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 .sold-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:var(--radius);pointer-events:none;z-index:1;}
 .sold-badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;z-index:2;}
 .card.sold:active{transform:scale(0.97);box-shadow:none;}
+
+/* LOGO MERK */
+.card-logo{position:absolute;top:8px;left:8px;width:32px;height:32px;object-fit:contain;border-radius:4px;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));}
+
+/* SCROLL TO TOP */
+.scroll-top{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0f0f0f;border:none;border-radius:999px;padding:8px 20px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;z-index:150;opacity:0;pointer-events:none;transition:opacity 0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+.scroll-top.visible{opacity:1;pointer-events:auto;}
+
+/* CATATAN */
+.modal-catatan{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:16px;font-style:italic;}
+
+.limited-badge{position:absolute;top:8px;right:8px;background:#d97706;color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:4px;letter-spacing:0.1em;text-transform:uppercase;z-index:2;}
+.card.limited .sold-overlay{background:rgba(217,119,6,0.2);}
 </style>
 </head>
 <body>
@@ -223,9 +236,8 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 </div>
 
 <script>
-const SHEET_ID = '1fEYltDCjE5ReKyuWI_rjSLmrDwj5KGaouXt689gYHkU';
+const APPS_SCRIPT_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT_KAMU';
 const WA_NUMBER = '62xxxxxxxxxx';
-const GIDS = { products_public:'120988448', variants:'212657426', settings:'795819937' };
 
 let products=[], variants=[], settings={};
 let activeCategory='Semua', activeSort='name', activeGender='';
@@ -234,34 +246,12 @@ let featuredTimer=null, featuredOffset=0, featuredPaused=false, featuredResumeTi
 
 // ── FETCH CSV ────────────────────────────────────────────────────────────────
 async function fetchSheet(name) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[name]}`;
+  const url = `${APPS_SCRIPT_URL}?sheet=${encodeURIComponent(name)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCSV(await res.text());
-}
-
-function parseCSV(csv) {
-  const lines = csv.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = splitLine(lines[0]);
-  return lines.slice(1).map(l => {
-    const v = splitLine(l), obj = {};
-    headers.forEach((h,i) => obj[h.trim()] = (v[i]||'').trim());
-    return obj;
-  }).filter(r => Object.values(r).some(v => v));
-}
-
-function splitLine(line) {
-  const res=[]; let cur='', inQ=false;
-  for (let i=0;i<line.length;i++) {
-    const c=line[i];
-    if (c==='"'&&!inQ){inQ=true;continue;}
-    if (c==='"'&&inQ&&line[i+1]==='"'){cur+='"';i++;continue;}
-    if (c==='"'&&inQ){inQ=false;continue;}
-    if (c===','&&!inQ){res.push(cur);cur='';continue;}
-    cur+=c;
-  }
-  res.push(cur); return res;
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.rows || [];
 }
 
 // ── FORMAT ───────────────────────────────────────────────────────────────────
@@ -279,6 +269,7 @@ function getImages(p) {
 
 function isActive(p) { const v=String(p.aktif).toUpperCase(); return v!=='FALSE'; }
 function isSold(p) { return String(p.aktif).toUpperCase()==='SOLD'; }
+function isLimited(p) { return String(p.aktif).toUpperCase()==='LIMITED'; }
 function isFeatured(p) { return String(p.featured).toUpperCase()==='TRUE'; }
 
 // ── FILTER & SORT ────────────────────────────────────────────────────────────
@@ -309,18 +300,22 @@ function renderGrid() {
     card.className='card';
     card.style.animationDelay=`${i*40}ms`;
     const sold=isSold(p);
+    const limited=isLimited(p);
     if(sold) card.classList.add('sold');
+    if(limited) card.classList.add('sold','limited');
     card.innerHTML=`
       <div class="card-img-wrap">
         ${imgs[0]?`<img class="card-img" src="${imgs[0]}" alt="${p.nama}" loading="lazy" onerror="this.style.display='none'">`:''}
+        ${p.logo_url_direct?`<img class="card-logo" src="${p.logo_url_direct}" alt="${p.merk||''}" onerror="this.style.display='none'">`:''}
       </div>
       <div class="card-body">
         ${p.merk?`<div class="card-merk">${p.merk}</div>`:''}
         <div class="card-name">${p.nama}</div>
         <div class="card-price">${formatIDR(p.harga_jual_idr)}</div>
       </div>
-      ${sold?`<div class="sold-overlay"></div><span class="sold-badge">Sold Out</span>`:''}`;
-    card.onclick=()=>{ if(!sold) openModal(p); };
+      ${sold&&!limited?`<div class="sold-overlay"></div><span class="sold-badge">Sold Out</span>`:''}
+      ${limited?`<div class="sold-overlay"></div><span class="limited-badge">Limited</span>`:''}`;
+    card.onclick=()=>{ if(!sold&&!limited) openModal(p); };
     grid.appendChild(card);
   });
 }
@@ -522,7 +517,7 @@ function renderModalContent(product, pVariants, colors) {
             ${hasSize?`<td><strong>${v.ukuran||'-'}</strong></td>`:''}
             <td style="color:var(--text2);font-size:12px">${v.keterangan||'-'}</td>
             <td>${String(v.tersedia).toUpperCase()==='TRUE'
-              ? `<span class="badge badge-true" data-copy="${encodeURIComponent([product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,v.warna&&v.warna!=='-'?'Warna: '+v.warna:'',v.ukuran&&v.ukuran!=='-'?'Ukuran: '+v.ukuran:'',v.keterangan?'Keterangan: '+v.keterangan:'','Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\\n'))}">Tersedia</span>`
+              ? `<span class="badge badge-true" data-copy="${encodeURIComponent([product.id?'Kode: '+product.id:'',product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,v.warna&&v.warna!=='-'?'Warna: '+v.warna:'',v.ukuran&&v.ukuran!=='-'?'Ukuran: '+v.ukuran:'',v.keterangan?'Keterangan: '+v.keterangan:'','Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\\n'))}">Tersedia</span>`
               : '<span class="badge badge-false">Habis</span>'
             }</td>
           </tr>`).join('')}
@@ -537,6 +532,7 @@ function renderModalContent(product, pVariants, colors) {
     </div>
     <div class="modal-name">${product.nama}</div>
     <div class="modal-price">${formatIDR(product.harga_jual_idr)}</div>
+    ${product.catatan&&product.catatan.trim()?`<div class="modal-catatan">${product.catatan}</div>`:''}
     ${colorHTML}${sizeHTML}
     <a class="modal-order" href="${waLink}" target="_blank" style="display:none">💬 Order via WhatsApp</a>`;
 
@@ -550,7 +546,7 @@ function renderModalContent(product, pVariants, colors) {
     const nvBtn=document.createElement('button');
     nvBtn.style.cssText='display:block;width:100%;padding:13px;background:var(--accent);color:#0f0f0f;border:none;border-radius:var(--radius);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;';
     nvBtn.textContent='Salin Info Pesanan';
-    const lines=[product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,'Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\n');
+    const lines=[product.id?'Kode: '+product.id:'',product.merk?'Merk: '+product.merk:'','Nama: '+product.nama,'Harga: '+formatIDR(product.harga_jual_idr)].filter(Boolean).join('\n');
     nvBtn.onclick=()=>copyText(lines);
     content.appendChild(nvBtn);
   }
@@ -661,6 +657,22 @@ function initPopup() {
   infoBtn.onclick  = () => overlay.classList.add('open');
 }
 
+// ── SCROLL TO TOP ────────────────────────────────────────────────────────────
+(function(){
+  const btn=document.getElementById('scroll-top');
+  let hideTimer=null;
+  window.addEventListener('scroll',()=>{
+    if(window.scrollY>300){
+      btn.classList.add('visible');
+      if(hideTimer) clearTimeout(hideTimer);
+      hideTimer=setTimeout(()=>btn.classList.remove('visible'),3000);
+    } else {
+      btn.classList.remove('visible');
+    }
+  },{passive:true});
+  btn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+})();
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -718,5 +730,6 @@ init();
     <div id="popup-body"></div>
   </div>
 </div>
+<button class="scroll-top" id="scroll-top">↑ Atas</button>
 </body>
 </html>
