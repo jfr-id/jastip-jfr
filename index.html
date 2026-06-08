@@ -683,6 +683,7 @@ function initPopup() {
 // ── SCROLL TO TOP ────────────────────────────────────────────────────────────
 (function(){
   const btn=document.getElementById('scroll-top');
+  if(!btn) return;
   let hideTimer=null;
   window.addEventListener('scroll',()=>{
     if(window.scrollY>300){
