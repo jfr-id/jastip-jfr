@@ -236,8 +236,9 @@ header{padding:28px 20px 16px;border-bottom:1px solid var(--border);position:sti
 </div>
 
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwR3gDHSInL2uqjX3NRn37s6jIDqcLPCSc4Dp1VRBDU09gojjCe-jiZssMd2WZs17XZ/exec';
+const SHEET_ID = '1fEYltDCjE5ReKyuWI_rjSLmrDwj5KGaouXt689gYHkU';
 const WA_NUMBER = '62xxxxxxxxxx';
+const GIDS = { products_public:'120988448', variants:'212657426', settings:'795819937' };
 
 let products=[], variants=[], settings={};
 let activeCategory='Semua', activeSort='name', activeGender='';
@@ -246,12 +247,34 @@ let featuredTimer=null, featuredOffset=0, featuredPaused=false, featuredResumeTi
 
 // ── FETCH CSV ────────────────────────────────────────────────────────────────
 async function fetchSheet(name) {
-  const url = `${APPS_SCRIPT_URL}?sheet=${encodeURIComponent(name)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[name]}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.rows || [];
+  return parseCSV(await res.text());
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = splitLine(lines[0]);
+  return lines.slice(1).map(l => {
+    const v = splitLine(l), obj = {};
+    headers.forEach((h,i) => obj[h.trim()] = (v[i]||'').trim());
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+function splitLine(line) {
+  const res=[]; let cur='', inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const c=line[i];
+    if (c==='"'&&!inQ){inQ=true;continue;}
+    if (c==='"'&&inQ&&line[i+1]==='"'){cur+='"';i++;continue;}
+    if (c==='"'&&inQ){inQ=false;continue;}
+    if (c===','&&!inQ){res.push(cur);cur='';continue;}
+    cur+=c;
+  }
+  res.push(cur); return res;
 }
 
 // ── FORMAT ───────────────────────────────────────────────────────────────────
